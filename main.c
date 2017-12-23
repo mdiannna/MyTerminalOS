@@ -80,6 +80,11 @@ int toInt(char * number) {
 	return result;
 }
 
+/**
+ * Run a command in terminal and get its output
+ * @param  char * command 
+ * @return char **
+ */
 char ** getCommandOutput(char * command) {
 	FILE *fp;
 	char path[1035];
