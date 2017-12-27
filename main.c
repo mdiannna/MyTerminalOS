@@ -30,9 +30,9 @@
  */
 char** split(char * word, const char * delimiter){ 
 	int i;
-	char ** result = (char**) malloc(MAX_NR_COMMAND_ARGUMENTS * sizeof(char *));
+	char ** result = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
 	
-	for(i=0; i<MAX_NR_COMMAND_ARGUMENTS+2; i++) {
+	for(i=0; i<MAX_NR_COMMAND_ARGUMENTS+1; i++) {
 		result[i] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
 	}
 
@@ -43,8 +43,8 @@ char** split(char * word, const char * delimiter){
 	    puts(token);
 	    result[i] = token;
 	    i++;
-	    token = strtok(NULL, " ");
-	    token = strtok(NULL, "\n");
+	    token = strtok(NULL, " \n");
+	    // token = strtok(NULL, "\n");
 	}
 	return result;
 }
@@ -123,9 +123,9 @@ int main(int argc, char const *argv[])
 	char * line = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 	char * command = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 	size_t bufsize = MAX_LENGTH_STRING;
-	char ** commands = (char**) malloc(MAX_NR_COMMAND_ARGUMENTS * sizeof(char *));
+	char ** commands = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
 
-	for(i=0; i<MAX_NR_COMMAND_ARGUMENTS+2; i++) {
+	for(i=0; i<MAX_NR_COMMAND_ARGUMENTS+1; i++) {
 		commands[i] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
 	}
 
@@ -137,11 +137,12 @@ int main(int argc, char const *argv[])
 	while(1) {
 		printf("@");
 		getline(&line, &bufsize, stdin);
+		printf("%s\n", line);
 
 		commands = split(line, " ");
 
 		printf("Commands separated:\n");
-
+		printf("String length: %d\n", stringLength(commands));
 		for(i=0; i<stringLength(commands); i++) {
 			printf("%s\n", commands[i]);
 		}
@@ -155,6 +156,7 @@ int main(int argc, char const *argv[])
 		// } else {
 			// commands[stringLength(commands)] = "";
 		commands[stringLength(commands)+1] = NULL;
+		commands[MAX_NR_COMMAND_ARGUMENTS] = NULL;
 		// }
 		// 
 		printf("Argumente:\n" );
@@ -171,9 +173,6 @@ int main(int argc, char const *argv[])
 			// strcpy(command, "/bin/");
 			// strcat(command, commands[0]);
 			// strcat(command, "ls");
-
-
-
 
 		// char ** lsOutput = getCommandOutput("/bin/ls");
 		char * which = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
