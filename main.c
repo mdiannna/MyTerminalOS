@@ -11,6 +11,13 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+/*********************************************
+			TO DOS
+*********************************************
+* - cd -> changedir (functie in linux)
+* - 
+* 
+**********************************************/
 
 /*********************************************
 			DEFINES
@@ -233,7 +240,9 @@ int main(int argc, char const *argv[])
 			char ** lsOutput = getCommandOutput(which);
 			
 			if(lsOutput[0] == NULL){
-				printf("Command not found\n");
+				printColor("red");
+				printf("%s: Command not found\n", line);
+				printColor("white");
 				continue;
 			}
 
