@@ -19,6 +19,47 @@
 #define MAX_LENGTH_STRING 255
 #define MAX_LINES_OUTPUT 20
 
+
+/*********************************************
+			COLORS
+*********************************************/
+/******************************
+WARNING: Colors will work on most UNIX systems but
+	are not supported in Win32 console component of Microsoft Windows 
+	before Windows 10 update TH2
+more information here: https://en.wikipedia.org/wiki/ANSI_escape_code
+*****************************/
+static char red[] = { 0x1b, '[', '1', ';', '3', '1', 'm', 0 };
+static char green[] = { 0x1b, '[', '1', ';', '3', '2', 'm', 0 };
+static char yellow[] = { 0x1b, '[', '1', ';', '3', '3', 'm', 0 };
+static char blue[] = { 0x1b, '[', '1', ';', '3', '4', 'm', 0 };
+static char magenta[] = { 0x1b, '[', '1', ';', '3', '5', 'm', 0 };
+static char cyan[] = { 0x1b, '[', '1', ';', '3', '6', 'm', 0 };
+static char white[] = { 0x1b, '[', '1', ';', '3', '7', 'm', 0 };
+
+void printColor(const char * color) {
+	if(color == "red"){
+		printf("%s", red);
+	}
+	if(color == "green"){
+		printf("%s", green);
+	}
+	if(color == "yellow"){
+		printf("%s", yellow);
+	}
+	if(color == "blue"){
+		printf("%s", blue);
+	}
+	if(color == "magenta"){
+		printf("%s", magenta);
+	}
+	if(color == "cyan"){
+		printf("%s", cyan);
+	}
+	if(color == "white"){
+		printf("%s", white);
+	}
+}
 /*********************************************
 			GENERAL FUNCTIONS
 *********************************************/
@@ -118,28 +159,35 @@ char ** getCommandOutput(char * command) {
 int main(int argc, char const *argv[])
 {	
 	int i=0;
-	
-	// Init variables	
-	char * line = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
-	char * command = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 	size_t bufsize = MAX_LENGTH_STRING;
-	char ** commands = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
-
-	for(i=0; i<MAX_NR_COMMAND_ARGUMENTS+1; i++) {
-		commands[i] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
-	}
-
+	
 	printf("Terminal started\n");
 
 	pid_t pid;
 
 	// Run terminal infinitely
 	while(1) {
+
+		// Init variables	
+		char * line = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
+		char * command = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
+		char ** commands = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
+
+		for(i=0; i<MAX_NR_COMMAND_ARGUMENTS+1; i++) {
+			commands[i] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
+		}
+
+		printColor("yellow");
 		printf("@");
 		getline(&line, &bufsize, stdin);
-		printf("%s\n", line);
+		// printf("%s\n", line);
+		printColor("white");
 
 		commands = split(line, " ");
+		if(stringLength(commands) ==0 ) {
+			continue;
+		}
+
 
 		printf("Commands separated:\n");
 		printf("String length: %d\n", stringLength(commands));
@@ -174,31 +222,48 @@ int main(int argc, char const *argv[])
 			// strcat(command, commands[0]);
 			// strcat(command, "ls");
 
-		// char ** lsOutput = getCommandOutput("/bin/ls");
-		char * which = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
-		strcpy(which, "which ");
-		strcat(which, commands[0]);
+			// char ** lsOutput = getCommandOutput("/bin/ls");
+			char * which = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
+			strcpy(which, "which ");
+			strcat(which, commands[0]);
 
-		printf("%s\n", which);		
+			// printf("%s\n", which);		
+			
 
-		char ** lsOutput = getCommandOutput(which);
-		strcpy(command, lsOutput[0]);
-		// printf("%s\n", lsOutput[0] );		
+			char ** lsOutput = getCommandOutput(which);
+			
+			if(lsOutput[0] == NULL){
+				printf("Command not found\n");
+				continue;
+			}
+
+			strcpy(command, lsOutput[0]);
 
 
 
 			// printf("Command to be executed: %s\n", command);
 			// printf("Command to be executed: %s", command);
 			
-			command = strtok(command, "\n");
+			command = strtok(command, " \n");
 			printf("%s", command);
 			printf("))))))))))))))%s\n",(commands+1)[0] );
 			printf("))))))))))))))%s\n",(commands+1)[1] );
 			printf("))))))))))))))%s\n",(commands+1)[2] );
-			execve(command, commands+1, NULL);
+			printf("_____________________\n\n");
+			// first argument in second argument should be the name of the file
+			if(stringLength(commands) ==1) {
+				execve(command, commands+1, NULL);
+			} else {
+				// filename
+				commands[0] = command;
+				execve(command, commands, NULL);
+			}
+
 			perror(NULL);
 			return errno;
 		} 
+
+
 		// return 0;
 
 		pid_t child_pid = wait(NULL);
@@ -206,10 +271,18 @@ int main(int argc, char const *argv[])
 			perror(NULL);
 		}
 		else {
+			printf("_____________________\n\n");
+			printColor("green");
 			printf("Done parent %d Me %d \n", getpid(), child_pid);
+			printColor("white");
 		}	
 
 		// printf("%line\n", line[0] );
+		
+		// Cleanup
+		free(line);
+		free(command);
+		free(commands);
 	}
 
 	return 0;
