@@ -14,9 +14,12 @@
 /*********************************************
 			TO DOS
 *********************************************
-* - cd -> changedir (functie in linux)
-* - 
+* commands not working:
+* - ls -la 
+* - subl
+* - gcc
 * 
+* autocomplete with tab
 **********************************************/
 
 /*********************************************
@@ -160,6 +163,12 @@ char ** getCommandOutput(char * command) {
 	return output;
 }
 
+
+void changeDirectory(char * directoryName) 
+{
+	chdir(directoryName);
+}
+
 /*********************************************
 			MAIN
 *********************************************/
@@ -171,6 +180,7 @@ int main(int argc, char const *argv[])
 	printf("Terminal started\n");
 
 	pid_t pid;
+
 
 	// Run terminal infinitely
 	while(1) {
@@ -196,12 +206,20 @@ int main(int argc, char const *argv[])
 		}
 
 
+
 		printf("Commands separated:\n");
 		printf("String length: %d\n", stringLength(commands));
 		for(i=0; i<stringLength(commands); i++) {
 			printf("%s\n", commands[i]);
 		}
 		printf("#%s\n", commands[0]);
+		// printf("%d", strcmp("cd", "cd"));
+
+		if(!strcmp(commands[0], "cd")) {
+			changeDirectory(commands[1]);
+			continue;
+		}
+
 
 		// char *childargv[] = {"", input_nr_char, NULL};
 		char *childargv[] = {"", NULL};
@@ -220,6 +238,8 @@ int main(int argc, char const *argv[])
 			printf("%s\n", (commands+1)[i]);
 		}
 
+
+
  		pid = fork();
 
  		if(pid<0) {
@@ -235,7 +255,6 @@ int main(int argc, char const *argv[])
 			strcat(which, commands[0]);
 
 			// printf("%s\n", which);		
-			
 
 			char ** lsOutput = getCommandOutput(which);
 			
