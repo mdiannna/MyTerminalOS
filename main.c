@@ -39,6 +39,8 @@ execl("/usr/bin/gcc", "gcc", "test.c", "-o", "test2", NULL);
 * -strace ls de ex. tb scris ca strace /bin/ls
 * 
 * autocomplete with tab
+*
+* ls -A = la  (ceva din manualul de sh)
 **********************************************/
 
 /*********************************************
@@ -337,14 +339,16 @@ int main(int argc, char const *argv[])
 
 			perror(NULL);
 			return errno;
+			// return 0;
+
 		} 
 
 
-		// return 0;
 
 		pid_t child_pid = wait(NULL);
 		if(child_pid < 0){
 			perror(NULL);
+			return errno;
 		}
 		else {
 			printf("_____________________\n\n");
