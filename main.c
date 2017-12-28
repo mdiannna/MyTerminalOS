@@ -16,16 +16,24 @@
 *********************************************
 *execve vs system
 *
-*
+* eroarea '' not found - inainte de ultimul NULL
 **********************************************/
 
 /*********************************************
 			TO DOS
 *********************************************
+*SPLIT-uieste "something lalala" ca un string impreuna, nu le separa dupa spatii
+*
+*vazi man sh for more info about the shell
+*
+* sudo & comenzi cu sudo
+* - sudo apt-get update etc
+* 
 * commands not working:
 * - ls -la 
-* - subl
 * - gcc
+* This WORKS:
+execl("/usr/bin/gcc", "gcc", "test.c", "-o", "test2", NULL);
 * - git commit & push
 *
 * -strace ls de ex. tb scris ca strace /bin/ls
@@ -36,7 +44,7 @@
 /*********************************************
 			DEFINES
 *********************************************/
-#define MAX_NR_COMMAND_ARGUMENTS 10
+#define MAX_NR_COMMAND_ARGUMENTS 20
 #define MAX_LENGTH_STRING 255
 #define MAX_LINES_OUTPUT 20
 
@@ -192,6 +200,17 @@ int main(int argc, char const *argv[])
 
 	pid_t pid;
 
+	// char *childargv[] = {"", input_nr_char, NULL};
+	// char *childargv[] = {"gcc", "test.c", "-o", "test2", NULL};
+
+	// execve("/usr/bin/gcc", childargv, NULL);
+	
+	// This WORKS:
+	// execl("/usr/bin/gcc", "gcc", "test.c", "-o", "test2", NULL);
+	// This WORKS:
+	// execl("/usr/bin/subl", "test.c", NULL);
+	// return 0;
+
 
 	// Run terminal infinitely
 	while(1) {
@@ -243,9 +262,7 @@ int main(int argc, char const *argv[])
 		}
 
 
-		// char *childargv[] = {"", input_nr_char, NULL};
-		char *childargv[] = {"", NULL};
-
+	
 		// if (stringLength(commands) > 1) {
 			// commands[stringLength(commands)] = NULL;
 		// } else {
@@ -308,11 +325,14 @@ int main(int argc, char const *argv[])
 			printf("_____________________\n\n");
 			// first argument in second argument should be the name of the file
 			if(stringLength(commands) ==1) {
-				execve(command, commands+1, NULL);
+				// execve(command, commands+1, NULL);
+				execl(command, command, NULL);
 			} else {
 				// filename
 				// commands[0] = command;
-				execve(command, commands, NULL);
+				// execve(command, commands, NULL);
+				execv(command, commands);
+				// execl(command, commands, NULL);
 			}
 
 			perror(NULL);
