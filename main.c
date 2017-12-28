@@ -12,12 +12,23 @@
 #include <fcntl.h>
 
 /*********************************************
+			QUESTIONS
+*********************************************
+*execve vs system
+*
+*
+**********************************************/
+
+/*********************************************
 			TO DOS
 *********************************************
 * commands not working:
 * - ls -la 
 * - subl
 * - gcc
+* - git commit & push
+*
+* -strace ls de ex. tb scris ca strace /bin/ls
 * 
 * autocomplete with tab
 **********************************************/
@@ -200,6 +211,8 @@ int main(int argc, char const *argv[])
 		// printf("%s\n", line);
 		printColor("white");
 
+		// system(line);
+
 		commands = split(line, " ");
 		if(stringLength(commands) ==0 ) {
 			continue;
@@ -215,9 +228,18 @@ int main(int argc, char const *argv[])
 		printf("#%s\n", commands[0]);
 		// printf("%d", strcmp("cd", "cd"));
 
+		// Change directory
 		if(!strcmp(commands[0], "cd")) {
 			changeDirectory(commands[1]);
 			continue;
+		}
+
+		// Exit terminal
+		if(!strcmp(commands[0], "exit")) {
+			printColor("red");
+			printf("Exit terminal\n");
+			printColor("white");
+			return 0;
 		}
 
 
@@ -228,6 +250,11 @@ int main(int argc, char const *argv[])
 			// commands[stringLength(commands)] = NULL;
 		// } else {
 			// commands[stringLength(commands)] = "";
+		
+
+		// WHY THIS GIVES SEGMENTATION FAULT???
+		// commands[stringLength(commands)] = NULL;
+		
 		commands[stringLength(commands)+1] = NULL;
 		commands[MAX_NR_COMMAND_ARGUMENTS] = NULL;
 		// }
@@ -274,16 +301,17 @@ int main(int argc, char const *argv[])
 			
 			command = strtok(command, " \n");
 			printf("%s", command);
-			printf("))))))))))))))%s\n",(commands+1)[0] );
-			printf("))))))))))))))%s\n",(commands+1)[1] );
-			printf("))))))))))))))%s\n",(commands+1)[2] );
+			printf("))))))))))))))%s\n",(commands)[0] );
+			printf("))))))))))))))%s\n",(commands)[1] );
+			printf("))))))))))))))%s\n",(commands)[2] );
+			printf("))))))))))))))%s\n",(commands)[3] );
 			printf("_____________________\n\n");
 			// first argument in second argument should be the name of the file
 			if(stringLength(commands) ==1) {
 				execve(command, commands+1, NULL);
 			} else {
 				// filename
-				commands[0] = command;
+				// commands[0] = command;
 				execve(command, commands, NULL);
 			}
 
@@ -300,9 +328,9 @@ int main(int argc, char const *argv[])
 		}
 		else {
 			printf("_____________________\n\n");
-			printColor("green");
-			printf("Done parent %d Me %d \n", getpid(), child_pid);
-			printColor("white");
+			// printColor("green");
+			// printf("Done parent %d Me %d \n", getpid(), child_pid);
+			// printColor("white");
 		}	
 
 		// printf("%line\n", line[0] );
