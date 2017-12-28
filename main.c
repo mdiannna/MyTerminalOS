@@ -38,7 +38,7 @@ execl("/usr/bin/gcc", "gcc", "test.c", "-o", "test2", NULL);
 *
 * -strace ls de ex. tb scris ca strace /bin/ls
 * 
-* autocomplete with tab
+* autocomplete with tab (some code done)
 *
 * ls -A = la  (ceva din manualul de sh)
 **********************************************/
@@ -202,6 +202,7 @@ int main(int argc, char const *argv[])
 
 	pid_t pid;
 
+
 	// char *childargv[] = {"", input_nr_char, NULL};
 	// char *childargv[] = {"gcc", "test.c", "-o", "test2", NULL};
 
@@ -229,6 +230,24 @@ int main(int argc, char const *argv[])
 		printColor("yellow");
 		printf("@");
 		getline(&line, &bufsize, stdin);
+
+		/**********************************/
+	   	// TODO: read chars until \n and put in "line" variable
+	   	// if TAB detected => try autocomplete with existing files (get with ls command)
+
+		// TAB detection for autocomplete
+		// char c = getchar();
+
+	 //   	if(c =='\t') {
+	 //   		printf("tab");
+	 //   	}
+
+	 //   	// Enter detection
+	 //   	if(c =='\n') {
+	 //   		printf("enter");
+	 //   	}
+		/**********************************/
+
 		// printf("%s\n", line);
 		printColor("white");
 
