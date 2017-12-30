@@ -115,7 +115,6 @@ char** split(char * word, const char * delimiter){
 	i=0;
 	while(token) {
 		strcpy(result[i], token);
-	    // result[i] = token;
 
 	    if(token[0]=='"') {
     		token = strtok(NULL, "\"");
@@ -125,7 +124,7 @@ char** split(char * word, const char * delimiter){
 	    	strcat(result[i], "\"");
 
 	    }
-	    puts(result[i]);
+	    // puts(result[i]);
 
 	    token = strtok(NULL, " \n");
 
