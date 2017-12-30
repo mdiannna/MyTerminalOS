@@ -184,11 +184,16 @@ char ** getCommandOutput(char * command) {
 	return output;
 }
 
-
+/**
+ * Change directory
+ * @param char * directoryName 
+ */
 void changeDirectory(char * directoryName) 
 {
 	chdir(directoryName);
 }
+
+
 
 /*********************************************
 			MAIN
@@ -230,23 +235,7 @@ int main(int argc, char const *argv[])
 		printColor("yellow");
 		printf("@");
 		getline(&line, &bufsize, stdin);
-
-		/**********************************/
-	   	// TODO: read chars until \n and put in "line" variable
-	   	// if TAB detected => try autocomplete with existing files (get with ls command)
-
-		// TAB detection for autocomplete
-		// char c = getchar();
-
-	 //   	if(c =='\t') {
-	 //   		printf("tab");
-	 //   	}
-
-	 //   	// Enter detection
-	 //   	if(c =='\n') {
-	 //   		printf("enter");
-	 //   	}
-		/**********************************/
+	
 
 		// printf("%s\n", line);
 		printColor("white");
@@ -292,15 +281,19 @@ int main(int argc, char const *argv[])
 
 		// WHY THIS GIVES SEGMENTATION FAULT???
 		// commands[stringLength(commands)] = NULL;
-		
-		commands[stringLength(commands)+1] = NULL;
-		commands[MAX_NR_COMMAND_ARGUMENTS] = NULL;
+		// printf("length(commands:%d\n", stringLength(commands)+1);
+		// commands = (char **) realloc(commands, (stringLength(commands)+1) * sizeof(char*));
+		// commands[stringLength(commands)] = NULL;
+		// commands[stringLength(commands)] = '\0';
+		// commands[stringLength(commands)+1] = NULL;
+		commands[stringLength(commands)] = NULL;
+		// commands[MAX_NR_COMMAND_ARGUMENTS] = NULL;
 		// }
 		// 
 		printf("Argumente:\n" );
 
-		for(i=0; i<=stringLength(commands+1); i++) {
-			printf("%s\n", (commands+1)[i]);
+		for(i=0; i<stringLength(commands); i++) {
+			printf("%s\n", (commands)[i]);
 		}
 
 
