@@ -257,7 +257,7 @@ int main(int argc, char const *argv[])
 
 		// system(line);
 
-		commands = split(line, " ");
+		commands = split(line, " \n");
 		if(stringLength(commands) ==0 ) {
 			continue;
 		}
@@ -374,6 +374,7 @@ int main(int argc, char const *argv[])
 		if(child_pid < 0){
 			perror(NULL);
 			return errno;
+			return 0;
 		}
 		else {
 			printf("\n_____________________\n\n");
