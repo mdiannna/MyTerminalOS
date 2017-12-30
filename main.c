@@ -108,14 +108,28 @@ char** split(char * word, const char * delimiter){
 		result[i] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
 	}
 
-	char *token = strtok(word, " \n");
+	char  * token = (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
+
+	token = strtok(word, delimiter);
 
 	i=0;
 	while(token) {
-	    // puts(token);
-	    result[i] = token;
-	    i++;
+		strcpy(result[i], token);
+	    // result[i] = token;
+
+	    if(token[0]=='"') {
+    		token = strtok(NULL, "\"");
+	    	
+	    	strcat(result[i], " ");
+	    	strcat(result[i], token);
+	    	strcat(result[i], "\"");
+
+	    }
+	    puts(result[i]);
+
 	    token = strtok(NULL, " \n");
+
+	    i++;
 	    // token = strtok(NULL, "\n");
 	}
 	return result;
