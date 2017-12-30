@@ -112,7 +112,7 @@ char** split(char * word, const char * delimiter){
 
 	i=0;
 	while(token) {
-	    puts(token);
+	    // puts(token);
 	    result[i] = token;
 	    i++;
 	    token = strtok(NULL, " \n");
@@ -174,7 +174,7 @@ char ** getCommandOutput(char * command) {
 	i++;
 	/* Read the output a line at a time - output it. */
 	while ( output[i]!= NULL) {
-		printf("%s", path);
+		// printf("%s", path);
 		output[i] = fgets(path, sizeof(path)-1, fp);
 		i++;
 	}
@@ -249,12 +249,12 @@ int main(int argc, char const *argv[])
 
 
 
-		printf("Commands separated:\n");
-		printf("String length: %d\n", stringLength(commands));
-		for(i=0; i<stringLength(commands); i++) {
-			printf("%s\n", commands[i]);
-		}
-		printf("#%s\n", commands[0]);
+		// printf("Commands separated:\n");
+		// printf("String length: %d\n", stringLength(commands));
+		// for(i=0; i<stringLength(commands); i++) {
+		// 	printf("%s\n", commands[i]);
+		// }
+		// printf("#%s\n", commands[0]);
 		// printf("%d", strcmp("cd", "cd"));
 
 		// Change directory
@@ -286,15 +286,18 @@ int main(int argc, char const *argv[])
 		// commands[stringLength(commands)] = NULL;
 		// commands[stringLength(commands)] = '\0';
 		// commands[stringLength(commands)+1] = NULL;
-		commands[stringLength(commands)] = NULL;
 		// commands[MAX_NR_COMMAND_ARGUMENTS] = NULL;
+		// 
+		// 
+		commands[stringLength(commands)] = NULL;
+		
 		// }
 		// 
-		printf("Argumente:\n" );
+		// printf("Argumente:\n" );
 
-		for(i=0; i<stringLength(commands); i++) {
-			printf("%s\n", (commands)[i]);
-		}
+		// for(i=0; i<stringLength(commands); i++) {
+		// 	printf("%s\n", (commands)[i]);
+		// }
 
 
 
@@ -331,23 +334,18 @@ int main(int argc, char const *argv[])
 			// printf("Command to be executed: %s", command);
 			
 			command = strtok(command, " \n");
-			printf("%s", command);
-			printf("))))))))))))))%s\n",(commands)[0] );
-			printf("))))))))))))))%s\n",(commands)[1] );
-			printf("))))))))))))))%s\n",(commands)[2] );
-			printf("))))))))))))))%s\n",(commands)[3] );
+			// printf("%s", command);
+			// printf("))))))))))))))%s\n",(commands)[0] );
+			// printf("))))))))))))))%s\n",(commands)[1] );
+			// printf("))))))))))))))%s\n",(commands)[2] );
+			// printf("))))))))))))))%s\n",(commands)[3] );
 			printf("_____________________\n\n");
 			// first argument in second argument should be the name of the file
-			if(stringLength(commands) ==1) {
-				// execve(command, commands+1, NULL);
-				execl(command, command, NULL);
-			} else {
-				// filename
-				// commands[0] = command;
-				// execve(command, commands, NULL);
+			// if(stringLength(commands) ==1) {
+				// execl(command, command, NULL);
+			// } else {
 				execv(command, commands);
-				// execl(command, commands, NULL);
-			}
+			// }
 
 			perror(NULL);
 			return errno;
