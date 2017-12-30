@@ -12,34 +12,12 @@
 #include <fcntl.h>
 
 /*********************************************
-			QUESTIONS
-*********************************************
-*execve vs system
-*
-* eroarea '' not found - inainte de ultimul NULL
-**********************************************/
-
-/*********************************************
 			TO DOS
 *********************************************
-*SPLIT-uieste "something lalala" ca un string impreuna, nu le separa dupa spatii
 *
-*vazi man sh for more info about the shell
-*
-* sudo & comenzi cu sudo
-* - sudo apt-get update etc
+*vezi man sh for more info about the shell
+*  echo "ssdg" > test.txt
 * 
-* commands not working:
-* - ls -la 
-* - gcc
-* This WORKS:
-execl("/usr/bin/gcc", "gcc", "test.c", "-o", "test2", NULL);
-* - git commit & push
-*
-* -strace ls de ex. tb scris ca strace /bin/ls
-* 
-* autocomplete with tab (some code done)
-*
 * ls -A = la  (ceva din manualul de sh)
 **********************************************/
 
