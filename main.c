@@ -202,8 +202,10 @@ int main(int argc, char const *argv[])
 {	
 	int i=0;
 	size_t bufsize = MAX_LENGTH_STRING;
-	
+		
+	printColor("magenta");
 	printf("Terminal started\n");
+	printColor("white");
 
 	pid_t pid;
 
@@ -339,7 +341,7 @@ int main(int argc, char const *argv[])
 			// printf("))))))))))))))%s\n",(commands)[1] );
 			// printf("))))))))))))))%s\n",(commands)[2] );
 			// printf("))))))))))))))%s\n",(commands)[3] );
-			printf("_____________________\n\n");
+			printf("\n_____________________\n\n");
 			// first argument in second argument should be the name of the file
 			// if(stringLength(commands) ==1) {
 				// execl(command, command, NULL);
@@ -349,7 +351,7 @@ int main(int argc, char const *argv[])
 
 			perror(NULL);
 			return errno;
-			// return 0;
+			return 0;
 
 		} 
 
@@ -361,7 +363,7 @@ int main(int argc, char const *argv[])
 			return errno;
 		}
 		else {
-			printf("_____________________\n\n");
+			printf("\n_____________________\n\n");
 			// printColor("green");
 			// printf("Done parent %d Me %d \n", getpid(), child_pid);
 			// printColor("white");
