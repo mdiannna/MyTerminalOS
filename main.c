@@ -30,6 +30,11 @@
 
 
 /*********************************************
+			ENVIRONMENT
+*********************************************/
+extern char **environ;
+
+/*********************************************
 			COLORS
 *********************************************/
 /******************************
@@ -337,7 +342,12 @@ int main(int argc, char const *argv[])
 			// if(stringLength(commands) ==1) {
 				// execl(command, command, NULL);
 			// } else {
-				execv(command, commands);
+			
+			// THIS WORKS PERFECT!!!
+				// execv(command, commands);
+			// THIS WORKS PERFECT!!!
+				// execv(command, commands);
+				execve(command, commands, environ);
 			// }
 
 			perror(NULL);
