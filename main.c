@@ -19,6 +19,11 @@
 *  echo "ssdg" > test.txt
 * 
 * ls -A = la  (ceva din manualul de sh)
+* 
+* !! cd daca nu merge sa dea eroare& in general comenzi eroare
+* !! use pipe for running which ????
+* pipe info: https://stackoverflow.com/questions/7292642/grabbing-output-from-exec
+* http://www.microhowto.info/howto/capture_the_output_of_a_child_process_in_c.html
 **********************************************/
 
 /*********************************************
@@ -33,6 +38,7 @@
 			ENVIRONMENT
 *********************************************/
 extern char **environ;
+
 
 /*********************************************
 			COLORS
@@ -74,14 +80,13 @@ void printColor(const char * color) {
 		printf("%s", white);
 	}
 }
+
+
 /*********************************************
 			GENERAL FUNCTIONS
 *********************************************/
 /**
  * Split string by a delimiter
- * @param char * word      
- * @param char * delimiter 
- * @return char**
  */
 char** split(char * word, const char * delimiter){ 
 	int i;
@@ -112,15 +117,13 @@ char** split(char * word, const char * delimiter){
 	    token = strtok(NULL, " \n");
 
 	    i++;
-	    // token = strtok(NULL, "\n");
 	}
 	return result;
 }
 
+
 /**
  * Calculate the length of a char**
- * @param  char * string
- * @return int
  */
 int stringLength(char ** string) {
 	int i=0;
@@ -134,10 +137,9 @@ int stringLength(char ** string) {
 	return length;
 }
 
+
 /**
  * Transform a char* to int
- * @param char * number
- * @return  int
  */
 int toInt(char * number) {
 	int result = 0;
@@ -148,10 +150,10 @@ int toInt(char * number) {
 	return result;
 }
 
+
 /**
- * Run a command in terminal and get its output
- * @param  char * command 
- * @return char **
+ * Run a command in terminal and get its output 
+ * (used for getting the output of "which command")
  */
 char ** getCommandOutput(char * command) {
 	FILE *fp;
@@ -160,7 +162,7 @@ char ** getCommandOutput(char * command) {
 	/* Open the command for reading. */
 	fp = popen(command, "r");
 	if (fp == NULL) {
-		printf("Failed to run command\n" );
+		printf("Failed to run command 'which'\n" );
 		exit(1);
 	}
 
@@ -170,7 +172,6 @@ char ** getCommandOutput(char * command) {
 	i++;
 	/* Read the output a line at a time - output it. */
 	while ( output[i]!= NULL) {
-		// printf("%s", path);
 		output[i] = fgets(path, sizeof(path)-1, fp);
 		i++;
 	}
@@ -182,7 +183,6 @@ char ** getCommandOutput(char * command) {
 
 /**
  * Change directory
- * @param char * directoryName 
  */
 void changeDirectory(char * directoryName) 
 {
@@ -199,63 +199,50 @@ int main(int argc, char const *argv[])
 	int i=0;
 	size_t bufsize = MAX_LENGTH_STRING;
 		
+	// set terminal color to magenta
 	printColor("magenta");
 	printf("Terminal started\n");
+	// reset terminal color to white
 	printColor("white");
 
 	pid_t pid;
 
 
-	// char *childargv[] = {"", input_nr_char, NULL};
-	// char *childargv[] = {"gcc", "test.c", "-o", "test2", NULL};
-
-	// execve("/usr/bin/gcc", childargv, NULL);
-	
-	// This WORKS:
-	// execl("/usr/bin/gcc", "gcc", "test.c", "-o", "test2", NULL);
-	// This WORKS:
-	// execl("/usr/bin/subl", "test.c", NULL);
-	// return 0;
-
-
-	// Run terminal infinitely
+	// Run terminal infinitely (until exit)
 	while(1) {
 
-		// Init variables	
+		// Allocate memory for variables	
 		char * line = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 		char * command = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 		char ** commands = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
-
 		for(i=0; i<MAX_NR_COMMAND_ARGUMENTS+1; i++) {
 			commands[i] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
 		}
+		char * which = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
+			
 
+		// set yellow color in terminal
 		printColor("yellow");
-		printf("@");
-		getline(&line, &bufsize, stdin);
-	
 
+		// print terminal specific symbol
+		printf("@");
+
+		//read line from terminal
+		getline(&line, &bufsize, stdin);
 		// printf("%s\n", line);
+		
+		//reset color to white in terminal
 		printColor("white");
 
-		// system(line);
-
+		// split read string into command and arguments
 		commands = split(line, " \n");
+
+		//if no command specified, do nothing
 		if(stringLength(commands) ==0 ) {
 			continue;
 		}
 
-
-
-		// printf("Commands separated:\n");
-		// printf("String length: %d\n", stringLength(commands));
-		// for(i=0; i<stringLength(commands); i++) {
-		// 	printf("%s\n", commands[i]);
-		// }
-		// printf("#%s\n", commands[0]);
-		// printf("%d", strcmp("cd", "cd"));
-
-		// Change directory
+		// Change directory if "cd" command
 		if(!strcmp(commands[0], "cd")) {
 			changeDirectory(commands[1]);
 			continue;
@@ -269,93 +256,39 @@ int main(int argc, char const *argv[])
 			return 0;
 		}
 
-
-	
-		// if (stringLength(commands) > 1) {
-			// commands[stringLength(commands)] = NULL;
-		// } else {
-			// commands[stringLength(commands)] = "";
-		
-
-		// WHY THIS GIVES SEGMENTATION FAULT???
-		// commands[stringLength(commands)] = NULL;
-		// printf("length(commands:%d\n", stringLength(commands)+1);
-		// commands = (char **) realloc(commands, (stringLength(commands)+1) * sizeof(char*));
-		// commands[stringLength(commands)] = NULL;
-		// commands[stringLength(commands)] = '\0';
-		// commands[stringLength(commands)+1] = NULL;
-		// commands[MAX_NR_COMMAND_ARGUMENTS] = NULL;
-		// 
-		// 
+		// terminate commands array with NULL for execve
 		commands[stringLength(commands)] = NULL;
 		
-		// }
-		// 
-		// printf("Argumente:\n" );
+		strcpy(which, "which ");
+		strcat(which, commands[0]);	
 
-		// for(i=0; i<stringLength(commands); i++) {
-		// 	printf("%s\n", (commands)[i]);
-		// }
+		// run "which <command>" and get the full command path
+		char ** whichCommandPath = getCommandOutput(which);			
+		
+		if(whichCommandPath[0] == NULL){
+			printColor("red");
+			printf("%s: Command not found\n", line);
+			printColor("white");
+			continue;
+		}
+
+		strcpy(command, whichCommandPath[0]);
+		command = strtok(command, " \n");
+
+		printf("\n_____________________\n\n");
 
 
-
+		// fork process
  		pid = fork();
 
  		if(pid<0) {
 			return errno;
 		} else if(pid==0) {
-			// strcpy(command, "/bin/");
-			// strcat(command, commands[0]);
-			// strcat(command, "ls");
-
-			// char ** lsOutput = getCommandOutput("/bin/ls");
-			char * which = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
-			strcpy(which, "which ");
-			strcat(which, commands[0]);
-
-			// printf("%s\n", which);		
-
-			char ** lsOutput = getCommandOutput(which);
-			
-			if(lsOutput[0] == NULL){
-				printColor("red");
-				printf("%s: Command not found\n", line);
-				printColor("white");
-				continue;
-			}
-
-			strcpy(command, lsOutput[0]);
-
-
-
-			// printf("Command to be executed: %s\n", command);
-			// printf("Command to be executed: %s", command);
-			
-			command = strtok(command, " \n");
-			// printf("%s", command);
-			// printf("))))))))))))))%s\n",(commands)[0] );
-			// printf("))))))))))))))%s\n",(commands)[1] );
-			// printf("))))))))))))))%s\n",(commands)[2] );
-			// printf("))))))))))))))%s\n",(commands)[3] );
-			printf("\n_____________________\n\n");
-			// first argument in second argument should be the name of the file
-			// if(stringLength(commands) ==1) {
-				// execl(command, command, NULL);
-			// } else {
-			
-			// THIS WORKS PERFECT!!!
-				// execv(command, commands);
-			// THIS WORKS PERFECT!!!
-				// execv(command, commands);
-				execve(command, commands, environ);
-			// }
-
+			// execute command with arguments and environment variables
+			execve(command, commands, environ);
 			perror(NULL);
 			return errno;
-			return 0;
-
 		} 
-
 
 
 		pid_t child_pid = wait(NULL);
@@ -366,13 +299,8 @@ int main(int argc, char const *argv[])
 		}
 		else {
 			printf("\n_____________________\n\n");
-			// printColor("green");
-			// printf("Done parent %d Me %d \n", getpid(), child_pid);
-			// printColor("white");
 		}	
 
-		// printf("%line\n", line[0] );
-		
 		// Cleanup
 		free(line);
 		free(command);
