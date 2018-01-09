@@ -189,6 +189,29 @@ void changeDirectory(char * directoryName)
 	chdir(directoryName);
 }
 
+/*
+Find number of pipes
+ */
+int nrOfPipes(char * line) {
+	int count = 0;
+	int i=0;
+	char quotations = 0;
+
+	while(line[i]!='\0') {
+		if(line[i] == '"' && quotations == 0) {
+			quotations = 1;
+		} else if(quotations == 1) {
+			if(line[i] == '"') {
+				quotations = 0;
+			}
+		} else if(line[i] == '|') {
+			count++;
+		}		
+		i++;
+	}
+
+	return count;
+}
 
 
 /*********************************************
@@ -206,6 +229,9 @@ int main(int argc, char const *argv[])
 	printColor("white");
 
 	pid_t pid;
+	char hasPipe = 0;
+    char buf;
+
 
 
 	// Run terminal infinitely (until exit)
@@ -219,6 +245,8 @@ int main(int argc, char const *argv[])
 			commands[i] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
 		}
 		char * which = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
+		int * pipefd = (int *) malloc(1 * sizeof(int));
+
 			
 
 		// set yellow color in terminal
@@ -231,6 +259,19 @@ int main(int argc, char const *argv[])
 		getline(&line, &bufsize, stdin);
 		// printf("%s\n", line);
 		
+		printf("Nr of pipes:\n");
+		printf("%d", nrOfPipes(line));
+		int nrOfPipesInt = nrOfPipes(line);
+
+		if (nrOfPipesInt == 1) {
+			pipefd = (int *) realloc(pipefd, nrOfPipesInt * sizeof(int));
+			if (pipe(pipefd) == -1) {
+				perror("pipe");
+				exit(EXIT_FAILURE);
+			}
+			hasPipe = 1;
+		}
+
 		//reset color to white in terminal
 		printColor("white");
 
@@ -284,10 +325,34 @@ int main(int argc, char const *argv[])
  		if(pid<0) {
 			return errno;
 		} else if(pid==0) {
-			// execute command with arguments and environment variables
-			execve(command, commands, environ);
-			perror(NULL);
-			return errno;
+			if (hasPipe) {
+				close(pipefd[nrOfPipesInt-1]);          /* Close unused write end */
+				int i;
+				for(i=0; i<nrOfPipesInt; i++) {
+					while (read(pipefd[i], &buf, 1) > 0) {
+						write(STDOUT_FILENO, &buf, 1);
+					}
+
+					write(STDOUT_FILENO, "\n", 1);
+					close(pipefd[i]);	
+				}
+				
+				_exit(EXIT_SUCCESS);
+			} else {
+				if (hasPipe) {
+					for(i=0; i<nrOfPipesInt-2; i++) {
+						close(pipefd[i]);          /* Close unused read end */
+				        write(pipefd[i+1], "teeeest", 7);
+				        close(pipefd[i+1]);          /* Reader will see EOF */
+				        wait(NULL);                /* Wait for child */
+				    }
+				} else {
+				// execute command with arguments and environment variables
+				execve(command, commands, environ);
+				perror(NULL);
+				return errno;	
+				}
+			}
 		} 
 
 
