@@ -19,9 +19,9 @@
 *
 *vezi man sh for more info about the shell
 *  echo "ssdg" > test.txt
-* 
+*
 * ls -A = la  (ceva din manualul de sh)
-* 
+*
 * !! cd daca nu merge sa dea eroare& in general comenzi eroare
 * !! use pipe for running which ????
 * pipe info: https://stackoverflow.com/questions/7292642/grabbing-output-from-exec
@@ -48,7 +48,7 @@ extern char **environ;
 *********************************************/
 /******************************
 WARNING: Colors will work on most UNIX systems but
-	are not supported in Win32 console component of Microsoft Windows 
+	are not supported in Win32 console component of Microsoft Windows
 	before Windows 10 update TH2
 more information here: https://en.wikipedia.org/wiki/ANSI_escape_code
 *****************************/
@@ -91,10 +91,10 @@ void printColor(const char * color) {
 /**
  * Split string by a delimiter
  */
-char** split(char * word, const char * delimiter){ 
+char** split(char * word, const char * delimiter){
 	int i;
 	char ** result = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
-	
+
 	for(i=0; i<MAX_NR_COMMAND_ARGUMENTS+1; i++) {
 		result[i] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
 	}
@@ -109,7 +109,7 @@ char** split(char * word, const char * delimiter){
 
 	    if(token[0]=='"') {
     		token = strtok(NULL, "\"");
-	    	
+
 	    	strcat(result[i], " ");
 	    	strcat(result[i], token);
 	    	strcat(result[i], "\"");
@@ -155,7 +155,7 @@ int toInt(char * number) {
 
 
 /**
- * Run a command in terminal and get its output 
+ * Run a command in terminal and get its output
  * (used for getting the output of "which command")
  */
 char ** getCommandOutput(char * command) {
@@ -187,7 +187,7 @@ char ** getCommandOutput(char * command) {
 /**
  * Change directory
  */
-void changeDirectory(char * directoryName) 
+void changeDirectory(char * directoryName)
 {
 	chdir(directoryName);
 }
@@ -209,7 +209,7 @@ int nrOfPipes(char * line) {
 			}
 		} else if(line[i] == '|') {
 			count++;
-		}		
+		}
 		i++;
 	}
 
@@ -223,7 +223,7 @@ int nrOfPipes(char * line) {
 			HISTORY/**
  + * Print history
  */
- int print_history(char **history, int commands_run) 
+ int print_history(char **history, int commands_run)
  {
  	printColor("cyan");
  	printf("I should print history\n");
@@ -241,14 +241,14 @@ int nrOfPipes(char * line) {
 
  	for(i=0; i <= last_index; i++) {
  		// what is this??
- 		// if(--n <= commands_run; i++) { 
- 		if(--n <= commands_run) { 
+ 		// if(--n <= commands_run; i++) {
+ 		if(--n <= commands_run) {
  			printf("%d %s\n", n, history[i % HISTORY_SIZE]);
  		}
  	}
 
  	return commands_run;
- } 
+ }
 
 
  /**
@@ -265,12 +265,12 @@ int run_history(char **history, int commands_run, int num_back) {
  /**
   * Run history
   */
-// int run_history(char **history, int commands_run, int num_back) 
+// int run_history(char **history, int commands_run, int num_back)
 // {
 // 	int i = (commands_run - 1 - num_back) % HISTORY_SIZE;
 // 	int j;
 // 	char ** commands = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
-	
+
 // 	for(j=0; j<MAX_NR_COMMAND_ARGUMENTS+1; j++) {
 // 		commands[j] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
 // 		commands[j][0] = '\0';
@@ -294,11 +294,11 @@ int run_history(char **history, int commands_run, int num_back) {
 // 	char * command = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 
 // 	strcpy(which, "which ");
-// 	strcat(which, commands[0]);	
+// 	strcat(which, commands[0]);
 
 // 	// run "which <command>" and get the full command path
-// 	char ** whichCommandPath = getCommandOutput(which);			
-		
+// 	char ** whichCommandPath = getCommandOutput(which);
+
 // 	if(whichCommandPath[0] == NULL){
 // 		printColor("red");
 // 		printf("%s: Command not found\n", line);
@@ -322,9 +322,9 @@ int run_history(char **history, int commands_run, int num_back) {
 //  			execve(command, commands, environ);
 //  			perror(NULL);
 //  			return errno;
-//  		} 
- 
- 
+//  		}
+
+
 //  		pid_t child_pid = wait(NULL);
 //  		if(child_pid < 0){
 //  			perror(NULL);
@@ -333,15 +333,15 @@ int run_history(char **history, int commands_run, int num_back) {
 //  		}
 //  		else {
 //  			printf("\n_____________________\n\n");
-//  		}	
- 
+//  		}
+
 //  	return commands_run;
 //  }
- 
+
  /**
  * Save history
  */
- 
+
  int save_history(char **history, char *cmd_input, int commands_run) {
  	int i = commands_run % HISTORY_SIZE;
  	commands_run++;
@@ -356,7 +356,7 @@ int run_history(char **history, int commands_run, int num_back) {
 			MAIN
 *********************************************/
 int main(int argc, char const *argv[])
-{	
+{
 	int i=0;
 	size_t bufsize = MAX_LENGTH_STRING;
 	int commands_run = 0; //position on each string
@@ -378,7 +378,7 @@ int main(int argc, char const *argv[])
 	// Run terminal infinitely (until exit)
 	while(1) {
 
-		// Allocate memory for variables	
+		// Allocate memory for variables
 		char * line = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 		char * command = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 		char ** commands = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
@@ -394,7 +394,7 @@ int main(int argc, char const *argv[])
  			history[i][0] = '\0';
  		}
 
-			
+
 
 		// set yellow color in terminal
 		printColor("yellow");
@@ -405,7 +405,7 @@ int main(int argc, char const *argv[])
 		//read line from terminal
 		getline(&line, &bufsize, stdin);
 		// printf("%s\n", line);
-		
+
 		printf("Nr of pipes:\n");
 		printf("%d", nrOfPipes(line));
 		int nrOfPipesInt = nrOfPipes(line);
@@ -423,12 +423,13 @@ int main(int argc, char const *argv[])
 		printColor("white");
 
 
-		// Save last line for histpry
-		for(i=0; !isspace(line[i]); i++) {
+		// Save last line for history
+		/*for(i=0; !isspace(line[i]); i++) {
  			last[line_len++] = line[i];
  		}
- 		last[line_len] = '\0';
+ 		last[line_len] = '\0';*/
 
+		commands_run = save_history(history, line, commands_run);
 
 		// split read string into command and arguments
 		commands = split(line, " \n");
@@ -440,7 +441,7 @@ int main(int argc, char const *argv[])
 		}
 		// History
  		else if(!strcmp(commands[0], "hs")) {
- 			print_history(history, commands_run);		
+ 			print_history(history, commands_run);
  		}
  		else if(!strcmp(commands[0], "!!")) {
  			run_history(history, commands_run, 0);
@@ -454,11 +455,13 @@ int main(int argc, char const *argv[])
  				else {
  					printColor("red");
  					printf("Error: Invalid history request\n");
+ 					printColor("white");
  				}
  			}
  			else{
  				printColor("red");
  				printf("Something went wrong!\n");
+ 				printColor("white");
  			}
  		}
 
@@ -478,14 +481,14 @@ int main(int argc, char const *argv[])
 
 		// terminate commands array with NULL for execve
 		commands[stringLength(commands)] = NULL;
-		commands_run = save_history(history, last, commands_run);
 		
+
 		strcpy(which, "which ");
-		strcat(which, commands[0]);	
+		strcat(which, commands[0]);
 
 		// run "which <command>" and get the full command path
-		char ** whichCommandPath = getCommandOutput(which);			
-		
+		char ** whichCommandPath = getCommandOutput(which);
+
 		if(whichCommandPath[0] == NULL){
 			printColor("red");
 			printf("%s: Command not found\n", line);
@@ -514,9 +517,9 @@ int main(int argc, char const *argv[])
 					}
 
 					write(STDOUT_FILENO, "\n", 1);
-					close(pipefd[i]);	
+					close(pipefd[i]);
 				}
-				
+
 				_exit(EXIT_SUCCESS);
 			} else {
 				if (hasPipe) {
@@ -530,10 +533,10 @@ int main(int argc, char const *argv[])
 				// execute command with arguments and environment variables
 				execve(command, commands, environ);
 				perror(NULL);
-				return errno;	
+				return errno;
 				}
 			}
-		} 
+		}
 
 
 		pid_t child_pid = wait(NULL);
@@ -544,7 +547,7 @@ int main(int argc, char const *argv[])
 		}
 		else {
 			printf("\n_____________________\n\n");
-		}	
+		}
 
 		// Cleanup
 		free(line);
