@@ -234,7 +234,7 @@ int nrOfPipes(char * line) {
  int print_history(char **history, int commands_run)
  {
     printColor("cyan");
-    printf("I should print history\n");
+    printf("History:\n");
     printColor("white");
 
     int n = HISTORY_SIZE + 1;
@@ -243,7 +243,8 @@ int nrOfPipes(char * line) {
 
     for(i=last_index+1; i < HISTORY_SIZE; i++) {
         if(--n <= commands_run) {
-            printf("%d %s\n", n, history[i % HISTORY_SIZE]);
+            // printf("%d %s\n", n, history[i % HISTORY_SIZE]);
+            printf("%d %s\n", n, history[n]);
         }
     }
 
@@ -260,7 +261,8 @@ int nrOfPipes(char * line) {
 
 
  /**
-  * Run history replacement
+  * Run history 
+  * TODO: fix bugs and run properly
   */
 int run_history(char **history, int commands_run, int num_back) {
     
@@ -271,88 +273,31 @@ int run_history(char **history, int commands_run, int num_back) {
     printf("%d: %s\n", num_back + 1, history[i]);
     runCommandFromLine(history[i], history, commands_run);
 
-
-
-    /*char ** commands = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
-
-    for(j=0; j<MAX_NR_COMMAND_ARGUMENTS+1; j++) {
-        commands[j] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
-        commands[j][0] = '\0';
-    }
-
-    printf("%d: %s\n", num_back + 1, history[i]);
-    */
-
-//  size_t argc = 0;
-//  int k;
-//  j = 0;
-//  do {
-//      for(k = 0; isalpha(history[i][j]); k++, j++) {
-//          commands[argc][k] = history[i][j];
-//      }
-//      commands[argc++][k] = '\0';
-//  } while(history[i][j++] == ' ');
-
-//  commands[argc++] = NULL;
-
-//  pid_t pid;
-//  char * command = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
-
-//  strcpy(which, "which ");
-//  strcat(which, commands[0]);
-
-//  // run "which <command>" and get the full command path
-//  char ** whichCommandPath = getCommandOutput(which);
-
-//  if(whichCommandPath[0] == NULL){
-//      printColor("red");
-//      printf("%s: Command not found\n", line);
-//      printColor("white");
-//      continue;
-//  }
-
-//  strcpy(command, whichCommandPath[0]);
-//  command = strtok(command, " \n");
-
-//  printf("\n_____________________\n\n");
-
-
-//      // fork process
-//          pid = fork();
-
-//          if(pid<0) {
-//          return errno;
-//          } else if(pid==0) {
-//              // execute command with arguments and environment variables
-//              execve(command, commands, environ);
-//              perror(NULL);
-//              return errno;
-//          }
-
-//          pid_t child_pid = wait(NULL);
-//          if(child_pid < 0){
-//              perror(NULL);
-//              return errno;
-//              return 0;
-//          }
-//          else {
-//              printf("\n_____________________\n\n");
-//          }
-
     return commands_run;
 }
+
 
  /**
  * Save history
  */
-
  int save_history(char **history, char *cmd_input, int commands_run) {
+    //for debug
     printf("commands run: %d\n", commands_run);
-    int i = commands_run % HISTORY_SIZE;
-    commands_run++;
-    history[i] = cmd_input;
 
+    // TODO: daca punem aici commands_run, nu include 'hs' si e mai ok
+    // commands_run++;
+    int i = commands_run % HISTORY_SIZE;
+    // commands_run++;
+
+    //for debug
+    printf("cmd_input:%s\n", cmd_input );
+
+    strcpy(history[i], strtok(cmd_input, "\n"));
+
+    //for debug
     printf("History[i]: %s\n", history[i]);
+
+    
     return commands_run;
 }
 /*******************************/
@@ -369,9 +314,9 @@ int runCommandFromLine(char * line, char ** history, int  commands_run)
     // Variable initialization
     pid_t pid;
     int hasPipe = 0;
-    // int commands_run = 0; //position on each string
     char buf;
     int i = 0;
+
     //memory allocation
     char * command = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
     char ** commands = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
@@ -406,11 +351,13 @@ int runCommandFromLine(char * line, char ** history, int  commands_run)
 
     // History
     else if(!strcmp(commands[0], "hs")) {
-        print_history(history, commands_run);       
+        print_history(history, commands_run); 
+        return -1;      
     }
     else if(!strcmp(commands[0], "!!")) {
         // run_history(history, commands_run, 0);
         run_history(history, commands_run, 1);
+        return -1;
     }
     else if(commands[0][0] == '!' && isdigit(commands[0][1])) {
         int history_num = 0;
@@ -532,7 +479,13 @@ int main(int argc, char const *argv[])
     int line_len = 0;
 
     char ** history = (char**) malloc(HISTORY_SIZE * sizeof(char*));
-
+    for(i=0; i<HISTORY_SIZE; i++) {
+            history[i] = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
+            // history[i] = "\0";
+            strcpy(history[i], "\0");
+            // strcpy(history[i], "aa");
+            // history[i][0] = '\0';
+        }
     // set terminal color to magenta
     printColor("magenta");
     printf("Terminal started\n");
@@ -548,11 +501,7 @@ int main(int argc, char const *argv[])
         // Allocate memory for variables    
         char * line = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 
-        for(i=0; i<HISTORY_SIZE; i++) {
-            history[i] = malloc(HISTORY_SIZE * sizeof(char));
-            history[i] = "\0";
-            // history[i][0] = '\0';
-        }
+      
 
         // set yellow color in terminal
         printColor("yellow");
@@ -568,7 +517,7 @@ int main(int argc, char const *argv[])
         printColor("white");
 
         commands_run = save_history(history, line, commands_run);
-
+        
         // TODO: status + check status output??
         runCommandFromLine(line, history, commands_run);
 
