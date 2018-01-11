@@ -1,50 +1,5 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-./*
-
-# Codeblocks files
-*.cbp
-*.layout
-
-#Other files
-complex_commands.png
-lexical_structure.png
-pipelines.png
-getCommandOutput.c
-testPipe.c
-test.c
-getCommandOutput
-test
-testPipe
-main
-
+*
+!README.md
+!.gitignore
+!main.c
+!Makefile
