@@ -34,7 +34,7 @@
 
 # Codeblocks files
 *.cbp
-.layout
+*.layout
 
 #Other files
 complex_commands.png
@@ -43,4 +43,8 @@ pipelines.png
 getCommandOutput.c
 testPipe.c
 test.c
+getCommandOutput
+test
+testPipe
+main
 
