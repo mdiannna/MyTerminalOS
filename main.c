@@ -34,12 +34,13 @@
 #define MAX_NR_COMMAND_ARGUMENTS 20
 #define MAX_LENGTH_STRING 255
 #define MAX_LINES_OUTPUT 20
-#define HISTORY_SIZE 30
+#define HISTORY_SIZE 10
 
 /*********************************************
         FUNCTION PROTOTYPES
 *********************************************/
-int runCommandFromLine(char * line, char ** history, int run_command); 
+int runCommandFromLine(char * line, char ** history, int * run_command); 
+int save_history(char **history, char *cmd_input, int commands_run);
 
 
 /*********************************************
@@ -242,14 +243,13 @@ int nrOfPipes(char * line) {
     int i;
 
     for(i=last_index+1; i < HISTORY_SIZE; i++) {
-        if(--n <= commands_run) {
+        if(--n < commands_run) {
             // printf("%d %s\n", n, history[i % HISTORY_SIZE]);
             printf("%d %s\n", n, history[n]);
         }
     }
 
     for(i=0; i <= last_index; i++) {
-        // what is this??
         // if(--n <= commands_run; i++) {
         if(--n <= commands_run) {
             printf("%d %s\n", n, history[i % HISTORY_SIZE]);
@@ -271,8 +271,19 @@ int run_history(char **history, int commands_run, int num_back) {
 
     printf("Run history\n");
     printf("%d: %s\n", num_back + 1, history[i]);
-    runCommandFromLine(history[i], history, commands_run);
+    char * commandToRun = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 
+    strcpy(commandToRun,history[i]);
+
+    printf(" #1 Commands run: %d\n", commands_run );
+    commands_run = save_history(history, commandToRun, commands_run);
+    printf(" #2 Commands run: %d\n", commands_run );
+
+    runCommandFromLine(commandToRun, history, &commands_run);
+    printf(" #3 Commands run: %d\n", commands_run );
+
+
+    free(commandToRun);
     return commands_run;
 }
 
@@ -283,11 +294,11 @@ int run_history(char **history, int commands_run, int num_back) {
  int save_history(char **history, char *cmd_input, int commands_run) {
     //for debug
     printf("commands run: %d\n", commands_run);
+    // TODO: daca punem aici commands_run, nu include 'hs' si e mai
+    
 
-    // TODO: daca punem aici commands_run, nu include 'hs' si e mai ok
-    // commands_run++;
     int i = commands_run % HISTORY_SIZE;
-    // commands_run++;
+    commands_run++;
 
     //for debug
     printf("cmd_input:%s\n", cmd_input );
@@ -308,7 +319,7 @@ int run_history(char **history, int commands_run, int num_back) {
 * Run a command from string
 * 
 */
-int runCommandFromLine(char * line, char ** history, int  commands_run) 
+int runCommandFromLine(char * line, char ** history, int * commands_run) 
 {
 
     // Variable initialization
@@ -325,7 +336,6 @@ int runCommandFromLine(char * line, char ** history, int  commands_run)
     }
     char * which = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
     int * pipefd = (int *) malloc(1 * sizeof(int));
-
 
     printf("Nr of pipes:\n");
     printf("%d\n", nrOfPipes(line));
@@ -346,24 +356,27 @@ int runCommandFromLine(char * line, char ** history, int  commands_run)
     printf("HAS PIPE? %d\n", hasPipe);
     //if no command specified, do nothing
     if(stringLength(commands) ==0 ) {
-        return -1;
+        // return -1;
     }
+
+    
 
     // History
     else if(!strcmp(commands[0], "hs")) {
-        print_history(history, commands_run); 
+        print_history(history, *commands_run); 
         return -1;      
     }
     else if(!strcmp(commands[0], "!!")) {
         // run_history(history, commands_run, 0);
-        run_history(history, commands_run, 1);
+        *commands_run = run_history(history, *commands_run, 1);
         return -1;
     }
     else if(commands[0][0] == '!' && isdigit(commands[0][1])) {
         int history_num = 0;
         if(sscanf(commands[0], "!%d", &history_num) == 1) {
-            if(history_num > 0 && history_num <= HISTORY_SIZE && history_num <= commands_run) {
-                run_history(history, commands_run, history_num - 1);
+            if(history_num > 0 && history_num <= HISTORY_SIZE && history_num <= *commands_run) {
+                *commands_run = run_history(history, *commands_run, history_num - 1);
+                return -1;
             }
             else {
                 printColor("red");
@@ -509,17 +522,25 @@ int main(int argc, char const *argv[])
         // print terminal specific symbol
         printf("@");
 
+
         //read line from terminal
         getline(&line, &bufsize, stdin);
         // printf("%s\n", line);
+        // 
+         
+        if(!strcmp(line, "\n") || strspn(line, " \n") == strlen(line)) {
+            continue;
+        }
 
         //reset color to white
         printColor("white");
 
-        commands_run = save_history(history, line, commands_run);
-        
-        // TODO: status + check status output??
-        runCommandFromLine(line, history, commands_run);
+        if( !(line[0] == '!') 
+        &&  !(line[0] == 'h' && line[1] == 's') ) {
+            commands_run = save_history(history, line, commands_run);
+        }
+
+        runCommandFromLine(line, history, &commands_run);
 
         // Cleanup
         free(line);
