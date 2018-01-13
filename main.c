@@ -39,8 +39,17 @@
 /*********************************************
         FUNCTION PROTOTYPES
 *********************************************/
+void printColor(const char * color);
+int stringLength(char ** string); 
+int toInt(char * number);
+char** split(char * word, const char * delimiter);
 int runCommandFromLine(char * line, char ** history, int * run_command); 
 int save_history(char **history, char *cmd_input, int commands_run);
+int run_history(char **history, int commands_run, int num_back);
+int print_history(char **history, int commands_run);
+int nrOfPipes(char * line);
+void changeDirectory(char * directoryName);
+char ** getCommandOutput(char * command);
 
 
 /*********************************************
