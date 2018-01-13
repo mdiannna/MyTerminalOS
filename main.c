@@ -16,13 +16,13 @@
 /*********************************************
             TO DOS
 *********************************************
-*
+* - modificat conversia cifrelor in istorie sa accepte si numere 
+* de mai multe cifre
+* 
 *vezi man sh for more info about the shell
 *  echo "ssdg" > test.txt
 *
-* ls -A = la  (ceva din manualul de sh)
 *
-* !! cd daca nu merge sa dea eroare& in general comenzi eroare
 * !! use pipe for running which ????
 * pipe info: https://stackoverflow.com/questions/7292642/grabbing-output-from-exec
 * http://www.microhowto.info/howto/capture_the_output_of_a_child_process_in_c.html
@@ -34,7 +34,7 @@
 #define MAX_NR_COMMAND_ARGUMENTS 20
 #define MAX_LENGTH_STRING 255
 #define MAX_LINES_OUTPUT 20
-#define HISTORY_SIZE 10
+#define MAX_HISTORY_SIZE 10
 
 /*********************************************
         FUNCTION PROTOTYPES
@@ -204,7 +204,16 @@ char ** getCommandOutput(char * command) {
  */
 void changeDirectory(char * directoryName)
 {
-    chdir(directoryName);
+    if(chdir(directoryName) == -1) {
+        if (errno == 2) {
+            printColor("red");
+            printf("No such file or directory\n");
+            printColor("white");    
+            return;
+        }
+        // else
+        perror(NULL);
+    }
 }
 
 
@@ -247,13 +256,13 @@ int nrOfPipes(char * line) {
     printf("History:\n");
     printColor("white");
 
-    int n = HISTORY_SIZE + 1;
-    int last_index = (commands_run - 1) % HISTORY_SIZE;
+    int n = MAX_HISTORY_SIZE + 1;
+    int last_index = (commands_run - 1) % MAX_HISTORY_SIZE;
     int i;
 
-    for(i=last_index+1; i < HISTORY_SIZE; i++) {
+    for(i=last_index+1; i < MAX_HISTORY_SIZE; i++) {
         if(--n < commands_run) {
-            // printf("%d %s\n", n, history[i % HISTORY_SIZE]);
+            // printf("%d %s\n", n, history[i % MAX_HISTORY_SIZE]);
             printf("%d %s\n", n, history[n]);
         }
     }
@@ -261,7 +270,7 @@ int nrOfPipes(char * line) {
     for(i=0; i <= last_index; i++) {
         // if(--n <= commands_run; i++) {
         if(--n <= commands_run) {
-            printf("%d %s\n", n, history[i % HISTORY_SIZE]);
+            printf("%d %s\n", n, history[i % MAX_HISTORY_SIZE]);
         }
     }
 
@@ -275,7 +284,7 @@ int nrOfPipes(char * line) {
   */
 int run_history(char **history, int commands_run, int num_back) {
     
-    int i = (commands_run - 1 - num_back) % HISTORY_SIZE;
+    int i = (commands_run - 1 - num_back) % MAX_HISTORY_SIZE;
     int j;
 
     printf("Run history\n");
@@ -302,20 +311,18 @@ int run_history(char **history, int commands_run, int num_back) {
  */
  int save_history(char **history, char *cmd_input, int commands_run) {
     //for debug
-    printf("commands run: %d\n", commands_run);
-    // TODO: daca punem aici commands_run, nu include 'hs' si e mai
-    
+    // printf("commands run: %d\n", commands_run);
 
-    int i = commands_run % HISTORY_SIZE;
+    int i = commands_run % MAX_HISTORY_SIZE;
     commands_run++;
 
     //for debug
-    printf("cmd_input:%s\n", cmd_input );
+    // printf("cmd_input:%s\n", cmd_input );
 
     strcpy(history[i], strtok(cmd_input, "\n"));
 
     //for debug
-    printf("History[i]: %s\n", history[i]);
+    // printf("History[i]: %s\n", history[i]);
 
     
     return commands_run;
@@ -383,7 +390,7 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
     else if(commands[0][0] == '!' && isdigit(commands[0][1])) {
         int history_num = 0;
         if(sscanf(commands[0], "!%d", &history_num) == 1) {
-            if(history_num > 0 && history_num <= HISTORY_SIZE && history_num <= *commands_run) {
+            if(history_num > 0 && history_num <= MAX_HISTORY_SIZE && history_num <= *commands_run) {
                 *commands_run = run_history(history, *commands_run, history_num - 1);
                 return -1;
             }
@@ -406,7 +413,7 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
 
     // Exit terminal
     if(!strcmp(commands[0], "exit")) {
-        printColor("red");
+        printColor("blue");
         printf("Exit terminal\n");
         printColor("white");
         _exit(EXIT_SUCCESS);
@@ -500,8 +507,8 @@ int main(int argc, char const *argv[])
     char last[100]; //last command
     int line_len = 0;
 
-    char ** history = (char**) malloc(HISTORY_SIZE * sizeof(char*));
-    for(i=0; i<HISTORY_SIZE; i++) {
+    char ** history = (char**) malloc(MAX_HISTORY_SIZE * sizeof(char*));
+    for(i=0; i<MAX_HISTORY_SIZE; i++) {
             history[i] = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
             // history[i] = "\0";
             strcpy(history[i], "\0");
