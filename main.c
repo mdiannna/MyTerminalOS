@@ -16,6 +16,8 @@
 /*********************************************
             TO DOS
 *********************************************
+*!!posibil bug cu ghilimelele in split()
+*
 * - modificat conversia cifrelor in istorie sa accepte si numere 
 * de mai multe cifre
 * 
@@ -62,9 +64,7 @@ extern char **environ;
             COLORS
 *********************************************/
 /******************************
-WARNING: Colors will work on most UNIX systems but
-    are not supported in Win32 console component of Microsoft Windows
-    before Windows 10 update TH2
+WARNING: ANSI codes were not supported on all Operating Systems
 more information here: https://en.wikipedia.org/wiki/ANSI_escape_code
 *****************************/
 static char red[] = { 0x1b, '[', '1', ';', '3', '1', 'm', 0 };
@@ -130,8 +130,9 @@ char** split(char * word, const char * delimiter){
             strcat(result[i], "\"");
         }
        
-        token = strtok(NULL, " \n");
-
+        // token = strtok(NULL, " \n");
+        token = strtok(NULL, delimiter);
+        printf("Token: %s\n", token);
         i++;
     }
     return result;
@@ -246,7 +247,6 @@ int nrOfPipes(char * line) {
 /*********************************************
             HISTORY
 *********************************************/
-
 /**
  * Print history
  */
@@ -262,13 +262,11 @@ int nrOfPipes(char * line) {
 
     for(i=last_index+1; i < MAX_HISTORY_SIZE; i++) {
         if(--n < commands_run) {
-            // printf("%d %s\n", n, history[i % MAX_HISTORY_SIZE]);
             printf("%d %s\n", n, history[n]);
         }
     }
 
     for(i=0; i <= last_index; i++) {
-        // if(--n <= commands_run; i++) {
         if(--n <= commands_run) {
             printf("%d %s\n", n, history[i % MAX_HISTORY_SIZE]);
         }
@@ -280,7 +278,6 @@ int nrOfPipes(char * line) {
 
  /**
   * Run history 
-  * TODO: fix bugs and run properly
   */
 int run_history(char **history, int commands_run, int num_back) {
     
@@ -330,6 +327,172 @@ int run_history(char **history, int commands_run, int num_back) {
 /*******************************/
 
 
+
+int runPipes(char * line) {
+    
+    pid_t cpid;
+    char buf;
+
+    int i = 0;
+    int hasPipe = 0;
+
+    char ** pipeCommands = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
+    for(i=0; i<MAX_NR_COMMAND_ARGUMENTS+1; i++) {
+        pipeCommands[i] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
+    }
+
+    char ** commands = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
+    for(i=0; i<MAX_NR_COMMAND_ARGUMENTS+1; i++) {
+        commands[i] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
+    }
+
+    char * command = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
+    char * which = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
+
+
+    pipeCommands = split(line, "|");
+    printf("pipeCommands[0]: %s\n", pipeCommands[0]);
+
+    // TODO: foreach pipeCommands the following
+    commands = split(line, " \n");
+    printf("commands[0]: %s\n", commands[0]);
+    
+
+    printf("stringLength(commands: %d)\n", stringLength(commands));
+    // int pipefd[stringLength(commands)];
+    int pipefd[2];
+
+
+    // for (i=0; i<stringLength(commands); i++) {
+    //     printf("i=%d\n",i );
+        if (pipe(pipefd) == -1) {
+            perror("pipe");
+            exit(EXIT_FAILURE);
+        }
+        else {
+            printColor("green");
+            printf("pipe created\n");
+            printColor("white");
+        }
+
+
+ // terminate commands array with NULL for execve
+    commands[stringLength(commands)] = NULL;
+
+    strcpy(which, "which ");
+    strcat(which, commands[0]); 
+
+    // run "which <command>" and get the full command path
+    char ** whichCommandPath = getCommandOutput(which);         
+
+    if(whichCommandPath[0] == NULL){
+        printColor("red");
+        printf("%s: Command not found\n", line);
+        printColor("white");
+        return -1;
+    }
+
+    strcpy(command, whichCommandPath[0]);
+    command = strtok(command, " \n");
+
+
+
+
+        cpid = fork();
+        
+
+        if(cpid<0) {
+            return errno;
+        }
+        if (cpid == 0) {    /* Child reads from pipe */
+            printf("PIPE :) \n");
+           //close(pipefd[0]);          /* Close unused read end */
+
+            // dup2 (pipefd[1], STDOUT_FILENO);
+            // printf("Command: %s, commands[0]: %s\n",command, commands[0] );
+            execve(command, commands, environ);
+            perror(NULL);
+           // close(pipefd[1]);          /* Close unused write end */
+           _exit(EXIT_SUCCESS);
+
+
+           // while (read(pipefd[0], &buf, 1) > 0)
+           //     write(STDOUT_FILENO, &buf, 1);
+
+           // write(STDOUT_FILENO, "\n", 1);
+           // close(pipefd[0]);
+           // _exit(EXIT_SUCCESS);
+
+       } else {            /* Parent writes command to pipe */
+           close(pipefd[0]);          /* Close unused read end */
+           // write(pipefd[1], argv[1], strlen(argv[1]));
+           write(pipefd[1], commands[0], strlen(commands[0]));
+           close(pipefd[1]);          /* Reader will see EOF */
+           wait(NULL);                /* Wait for child */
+           // exit(EXIT_SUCCESS);
+       }
+   // }
+
+
+  
+
+    // if(pid<0) {
+    //     return errno;
+    // } else if(pid==0) {
+    //     if (hasPipe) {
+    //         printf("HAS PIPE :) \n");
+    //         close(pipefd[0]);          /* Close unused read end */
+            
+    //             write(pipefd[1], commands[0], strlen(commands[0]));
+    //             printf("Trying to write '%s' to parent\n", commands[0] );
+    //            // write(STDOUT_FILENO, "\n", 1);
+
+    //             close(pipefd[1]);          /* Reader will see EOF */
+                
+
+    //            // close(pipefd[0]);
+
+    //         printf("BUF:%c\n", buf);
+    //         _exit(EXIT_SUCCESS);
+    //     } else {
+    //         if (hasPipe) {
+    //             printf("PIPE\n");
+    //             close(pipefd[1]);          /* Close unused write end */
+    //             // write(pipefd[1], argv[1], strlen(argv[1]));
+    //         while (read(pipefd[0], &buf, 1) > 0) {
+    //             write(STDOUT_FILENO, &buf, 1);
+    //             printf("Buf: %c\n", buf);
+    //         }
+    //            close(pipefd[0]);
+
+
+    //             wait(NULL);                /* Wait for child */
+
+
+    //             exit(EXIT_SUCCESS);
+
+    //         } else {
+    //             // execute command with arguments and environment variables
+    //             execve(command, commands, environ);
+    //             perror(NULL);
+    //             return errno;   
+    //         }
+    //     }
+    // } 
+
+   
+    // pid_t child_pid = wait(NULL);
+    // if(child_pid < 0){
+    //     perror(NULL);
+    //     return errno;
+    //     return 0;
+    // }
+    // else {
+        printf("\n_____________________\n\n");
+    // }
+
+}
+
 /**
 * 
 * Run a command from string
@@ -340,8 +503,6 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
 
     // Variable initialization
     pid_t pid;
-    int hasPipe = 0;
-    char buf;
     int i = 0;
 
     //memory allocation
@@ -351,43 +512,34 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
         commands[i] =  (char*) malloc(MAX_LENGTH_STRING * sizeof(char));
     }
     char * which = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
-    int * pipefd = (int *) malloc(1 * sizeof(int));
+
 
     printf("Nr of pipes:\n");
     printf("%d\n", nrOfPipes(line));
     int nrOfPipesInt = nrOfPipes(line);
 
     if (nrOfPipesInt > 0) {
-        pipefd = (int *) realloc(pipefd, nrOfPipesInt * sizeof(int));
-        if (pipe(pipefd) == -1) {
-            perror("pipe");
-            exit(EXIT_FAILURE);
-        }
-        hasPipe = 1;
+        runPipes(line);
+        return -1;
+    } else {
+        // split read string into command and arguments
+        commands = split(line, " \n");
     }
 
-    // split read string into command and arguments
-    commands = split(line, " \n");
-
-    printf("HAS PIPE? %d\n", hasPipe);
-    //if no command specified, do nothing
-    if(stringLength(commands) ==0 ) {
-        // return -1;
-    }
-
-    
 
     // History
-    else if(!strcmp(commands[0], "hs")) {
+    if(!strcmp(commands[0], "hs")) {
         print_history(history, *commands_run); 
         return -1;      
     }
-    else if(!strcmp(commands[0], "!!")) {
+
+    if(!strcmp(commands[0], "!!")) {
         // run_history(history, commands_run, 0);
         *commands_run = run_history(history, *commands_run, 1);
         return -1;
     }
-    else if(commands[0][0] == '!' && isdigit(commands[0][1])) {
+    
+    if(commands[0][0] == '!' && isdigit(commands[0][1])) {
         int history_num = 0;
         if(sscanf(commands[0], "!%d", &history_num) == 1) {
             if(history_num > 0 && history_num <= MAX_HISTORY_SIZE && history_num <= *commands_run) {
@@ -438,6 +590,7 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
     strcpy(command, whichCommandPath[0]);
     command = strtok(command, " \n");
 
+
     printf("\n_____________________\n\n");
 
     // fork process
@@ -446,55 +599,27 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
     if(pid<0) {
         return errno;
     } else if(pid==0) {
-        if (hasPipe) {
-            printf("HAS PIPE :) \n");
-            close(pipefd[nrOfPipesInt-1]);          /* Close unused write end */
-            int i;
-            for(i=0; i<nrOfPipesInt; i++) {
-                printf("%d\n", pipefd[i]);
-                while (read(pipefd[i], &buf, 1) > 0) {
-                    write(STDOUT_FILENO, &buf, 1);
-                    printf("%c\n", buf);
-                }
-
-                write(STDOUT_FILENO, "\n", 1);
-                close(pipefd[i]);   
-            }
-            printf("BUF:%c\n", buf);
-            _exit(EXIT_SUCCESS);
-        } else {
-            if (hasPipe) {
-                printf("PIPE\n");
-                for(i=0; i<nrOfPipesInt-2; i++) {
-                    close(pipefd[i]);          /* Close unused read end */
-                    write(pipefd[i+1], "teeeest", 7);
-                    close(pipefd[i+1]);          /* Reader will see EOF */
-                    wait(NULL);                /* Wait for child */
-                }
-            } else {
-                // execute command with arguments and environment variables
-                execve(command, commands, environ);
-                perror(NULL);
-                return errno;   
-            }
-        }
-    } 
+    
+        // execute command with arguments and environment variables
+        execve(command, commands, environ);
+        perror(NULL);
+        return errno;
+    }
 
     pid_t child_pid = wait(NULL);
     if(child_pid < 0){
         perror(NULL);
         return errno;
         return 0;
-        _exit(EXIT_FAILURE);
     }
     else {
         printf("\n_____________________\n\n");
-    }   
+    }
 
     free(command);
     free(commands);
     free(which);
-    free(pipefd);
+    // free(pipefd);
 }
 
 /*********************************************

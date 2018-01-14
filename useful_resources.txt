@@ -1,0 +1,12 @@
+----------------
+Pipes:
+----------------
+https://ryanstutorials.net/linuxtutorial/piping.php
+http://www.linfo.org/pipes.html
+
+example of usages:
+...................
+$ echo -e "orange \npeach \ncherry" | sort > fruit
+$ ls | head -4
+$ ls | head -4 | tail -1
+----------------
