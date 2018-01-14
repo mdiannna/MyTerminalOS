@@ -132,7 +132,7 @@ char** split(char * word, const char * delimiter){
        
         // token = strtok(NULL, " \n");
         token = strtok(NULL, delimiter);
-        printf("Token: %s\n", token);
+        // printf("Token: %s\n", token);
         i++;
     }
     return result;
@@ -358,22 +358,18 @@ int runPipes(char * line) {
     printf("commands[0]: %s\n", commands[0]);
     
 
-    printf("stringLength(commands: %d)\n", stringLength(commands));
-    // int pipefd[stringLength(commands)];
     int pipefd[2];
 
 
-    // for (i=0; i<stringLength(commands); i++) {
-    //     printf("i=%d\n",i );
-        if (pipe(pipefd) == -1) {
-            perror("pipe");
-            exit(EXIT_FAILURE);
-        }
-        else {
-            printColor("green");
-            printf("pipe created\n");
-            printColor("white");
-        }
+    if (pipe(pipefd) == -1) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
+    else {
+        printColor("green");
+        printf("pipe created\n");
+        printColor("white");
+    }
 
 
  // terminate commands array with NULL for execve
@@ -395,101 +391,52 @@ int runPipes(char * line) {
     strcpy(command, whichCommandPath[0]);
     command = strtok(command, " \n");
 
+    // fork process
+    cpid = fork();
+    
 
+    // error creating child
+    if(cpid<0) {
+        return errno;
+    }
+    // child
+    if (cpid == 0) {    /* Child reads from pipe */
+        printColor("cyan");
+        printf("child \n");
+        printColor("white");
 
+        close(pipefd[0]);          /* Close unused read end */
 
-        cpid = fork();
+// Trebuie sau nu???? (merge si fara acum)
+        dup2 (pipefd[1], STDOUT_FILENO);
+// 
+       close(pipefd[1]);          /* Close unused write end */
+
+        // printf("Command: %s, commands[0]: %s\n",command, commands[0] );
+        execve(command, commands, environ);
+        perror(NULL);
+
+    } 
+    // parent
+    else {            /* Parent writes command to pipe */
+
+        printColor("cyan");
+        printf("parent \n");
+        printColor("white");
         
+        close(pipefd[1]);          /* Reader will see EOF */
+        wait(NULL);                /* Wait for child */
 
-        if(cpid<0) {
-            return errno;
+        while (read(pipefd[0], &buf, 1) > 0){
+           write(STDOUT_FILENO, &buf, 1);
         }
-        if (cpid == 0) {    /* Child reads from pipe */
-            printf("PIPE :) \n");
-           //close(pipefd[0]);          /* Close unused read end */
 
-            // dup2 (pipefd[1], STDOUT_FILENO);
-            // printf("Command: %s, commands[0]: %s\n",command, commands[0] );
-            execve(command, commands, environ);
-            perror(NULL);
-           // close(pipefd[1]);          /* Close unused write end */
-           _exit(EXIT_SUCCESS);
+        write(STDOUT_FILENO, "\n", 1);
+        close(pipefd[0]);
+        return 0;
+    }    
 
-
-           // while (read(pipefd[0], &buf, 1) > 0)
-           //     write(STDOUT_FILENO, &buf, 1);
-
-           // write(STDOUT_FILENO, "\n", 1);
-           // close(pipefd[0]);
-           // _exit(EXIT_SUCCESS);
-
-       } else {            /* Parent writes command to pipe */
-           close(pipefd[0]);          /* Close unused read end */
-           // write(pipefd[1], argv[1], strlen(argv[1]));
-           write(pipefd[1], commands[0], strlen(commands[0]));
-           close(pipefd[1]);          /* Reader will see EOF */
-           wait(NULL);                /* Wait for child */
-           // exit(EXIT_SUCCESS);
-       }
-   // }
-
-
-  
-
-    // if(pid<0) {
-    //     return errno;
-    // } else if(pid==0) {
-    //     if (hasPipe) {
-    //         printf("HAS PIPE :) \n");
-    //         close(pipefd[0]);          /* Close unused read end */
-            
-    //             write(pipefd[1], commands[0], strlen(commands[0]));
-    //             printf("Trying to write '%s' to parent\n", commands[0] );
-    //            // write(STDOUT_FILENO, "\n", 1);
-
-    //             close(pipefd[1]);          /* Reader will see EOF */
-                
-
-    //            // close(pipefd[0]);
-
-    //         printf("BUF:%c\n", buf);
-    //         _exit(EXIT_SUCCESS);
-    //     } else {
-    //         if (hasPipe) {
-    //             printf("PIPE\n");
-    //             close(pipefd[1]);          /* Close unused write end */
-    //             // write(pipefd[1], argv[1], strlen(argv[1]));
-    //         while (read(pipefd[0], &buf, 1) > 0) {
-    //             write(STDOUT_FILENO, &buf, 1);
-    //             printf("Buf: %c\n", buf);
-    //         }
-    //            close(pipefd[0]);
-
-
-    //             wait(NULL);                /* Wait for child */
-
-
-    //             exit(EXIT_SUCCESS);
-
-    //         } else {
-    //             // execute command with arguments and environment variables
-    //             execve(command, commands, environ);
-    //             perror(NULL);
-    //             return errno;   
-    //         }
-    //     }
-    // } 
-
-   
-    // pid_t child_pid = wait(NULL);
-    // if(child_pid < 0){
-    //     perror(NULL);
-    //     return errno;
-    //     return 0;
-    // }
-    // else {
-        printf("\n_____________________\n\n");
-    // }
+    printf("\n_____________________\n\n");
 
 }
 
@@ -663,18 +610,17 @@ int main(int argc, char const *argv[])
         // print terminal specific symbol
         printf("@");
 
-
         //read line from terminal
         getline(&line, &bufsize, stdin);
         // printf("%s\n", line);
-        // 
-         
+        
+        //reset color to white
+        printColor("white");
+
+ 
         if(!strcmp(line, "\n") || strspn(line, " \n") == strlen(line)) {
             continue;
         }
-
-        //reset color to white
-        printColor("white");
 
         if( !(line[0] == '!') 
         &&  !(line[0] == 'h' && line[1] == 's') ) {
