@@ -1,3 +1,10 @@
+
+/*********************************************
+            Terminal simulation
+**********************************************
+* Authors: Diana Marusic, Dorina Craciun
+*********************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,23 +19,6 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-
-/*********************************************
-            TO DOS
-*********************************************
-*!!posibil bug cu ghilimelele in split()
-*
-* - modificat conversia cifrelor in istorie sa accepte si numere 
-* de mai multe cifre
-* 
-*vezi man sh for more info about the shell
-*  echo "ssdg" > test.txt
-*
-*
-* !! use pipe for running which ????
-* pipe info: https://stackoverflow.com/questions/7292642/grabbing-output-from-exec
-* http://www.microhowto.info/howto/capture_the_output_of_a_child_process_in_c.html
-**********************************************/
 
 /*********************************************
             DEFINES
@@ -65,7 +55,7 @@ extern char **environ;
 *********************************************/
 /******************************
 WARNING: ANSI codes were not supported on all Operating Systems
-more information here: https://en.wikipedia.org/wiki/ANSI_escape_code
+more information here: https:/*en.wikipedia.org/wiki/ANSI_escape_code
 *****************************/
 static char red[] = { 0x1b, '[', '1', ';', '3', '1', 'm', 0 };
 static char green[] = { 0x1b, '[', '1', ';', '3', '2', 'm', 0 };
@@ -129,10 +119,11 @@ char** split(char * word, const char * delimiter){
             strcat(result[i], token);
             strcat(result[i], "\"");
         }
-       
-        // token = strtok(NULL, " \n");
+
         token = strtok(NULL, delimiter);
-        // printf("Token: %s\n", token);
+
+        /* for debug */
+        /* printf("Token: %s\n", token); */
         i++;
     }
     return result;
@@ -212,7 +203,7 @@ void changeDirectory(char * directoryName)
             printColor("white");    
             return;
         }
-        // else
+        /* else */
         perror(NULL);
     }
 }
@@ -284,18 +275,16 @@ int run_history(char **history, int commands_run, int num_back) {
     int i = (commands_run - 1 - num_back) % MAX_HISTORY_SIZE;
     int j;
 
-    printf("Run history\n");
-    printf("%d: %s\n", num_back + 1, history[i]);
+    /* for debug */
+    /* printf("Run history\n"); */
+    /* printf("%d: %s\n", num_back + 1, history[i]); */
     char * commandToRun = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 
     strcpy(commandToRun,history[i]);
 
-    printf(" #1 Commands run: %d\n", commands_run );
     commands_run = save_history(history, commandToRun, commands_run);
-    printf(" #2 Commands run: %d\n", commands_run );
 
     runCommandFromLine(commandToRun, history, &commands_run);
-    printf(" #3 Commands run: %d\n", commands_run );
 
 
     free(commandToRun);
@@ -307,19 +296,19 @@ int run_history(char **history, int commands_run, int num_back) {
  * Save history
  */
  int save_history(char **history, char *cmd_input, int commands_run) {
-    //for debug
-    // printf("commands run: %d\n", commands_run);
+    /* for debug */
+    /* printf("commands run: %d\n", commands_run); */
 
     int i = commands_run % MAX_HISTORY_SIZE;
     commands_run++;
 
-    //for debug
-    // printf("cmd_input:%s\n", cmd_input );
+    /*for debug */
+    /* printf("cmd_input:%s\n", cmd_input ); */
 
     strcpy(history[i], strtok(cmd_input, "\n"));
 
-    //for debug
-    // printf("History[i]: %s\n", history[i]);
+    /* for debug */
+    /* printf("History[i]: %s\n", history[i]); */
 
     
     return commands_run;
@@ -356,9 +345,10 @@ int runPipes(char * line, int nrOfPipes) {
 
 
     pipeCommands = split(line, "|");
-    printf("pipeCommands[0]: %s\n", pipeCommands[0]);
+    /* for debug */
+    /* printf("pipeCommands[0]: %s\n", pipeCommands[0]); */
 
-    // one more command than | character
+    /* one more command than | character*/
     nrOfPipes++;
     
 
@@ -369,31 +359,34 @@ int runPipes(char * line, int nrOfPipes) {
             perror("pipe error");
             exit(EXIT_FAILURE);
         }
+        /* for debug */
+        /*
         else {
             printColor("green");
             printf("pipe %d created\n", i);
             printColor("white");
         }
+        */
     }
     
 
     
     int currentCommandInt = 0;
     int pipeCommandsLength = stringLength(pipeCommands);
-    // printf("PipecCommandsLength: %d\n", pipeCommandsLength);
+    /* printf("PipecCommandsLength: %d\n", pipeCommandsLength); */
 
     int j=0;
     
     for (currentCommandInt=0; currentCommandInt<pipeCommandsLength; currentCommandInt++) {
         commands = split(pipeCommands[currentCommandInt], " \n");
 
-        // terminate commands array with NULL for execve
+        /* terminate commands array with NULL for execve */
         commands[stringLength(commands)] = NULL;
 
         strcpy(which, "which ");
         strcat(which, commands[0]); 
 
-        // run "which <command>" and get the full command path
+        /* run "which <command>" and get the full command path */
         whichCommandPath = getCommandOutput(which);         
 
         if(whichCommandPath[0] == NULL){
@@ -407,19 +400,18 @@ int runPipes(char * line, int nrOfPipes) {
         command = strtok(command, " \n");
 
 
-        // fork process
+        /* fork process*/
         cpid = fork();
         
 
        
-        // child
+        /* child */
         if (cpid == 0) { 
 
-            // printColor("cyan");
-            printf("child %d\n", getpid());
-            // printColor("white");
+            /* for debug */
+            /* printf("child %d\n", getpid());*/
             
-              //if not last command
+            /* if not last command */
             if(currentCommandInt != pipeCommandsLength-1 ){
                 if(dup2(pipefd[j + 1], 1) < 0){
                     perror("dup2");
@@ -427,10 +419,10 @@ int runPipes(char * line, int nrOfPipes) {
                 }
             } 
             
-            //if not first command&& j!= 2*nrOfPipes
+            /*if not first command&& j!= 2*nrOfPipes */
             if(currentCommandInt != 0 ){
                 if(dup2(pipefd[j-2], 0) < 0){
-                    perror(" dup2");///j-2 0 j+1 1
+                    perror(" dup2"); /* j-2 0 j+1 1*/
                     return EXIT_FAILURE;
                 }
             }
@@ -444,19 +436,19 @@ int runPipes(char * line, int nrOfPipes) {
             perror(NULL);
             return EXIT_FAILURE;
         } 
-         // error creating child
+        /* if error creating child */
         else if(cpid<0) {
             return errno;
         }
         j+=2;
     }
 
-    // close pipes
+    /* close pipes */
     for(i = 0; i < 2 * nrOfPipes; i++){
         close(pipefd[i]);
     }
 
-    // parent wait for children
+    /* parent wait for children */
     for(i = 0; i < nrOfPipes + 1; i++){
         wait(NULL);
     }
@@ -475,11 +467,11 @@ int runPipes(char * line, int nrOfPipes) {
 int runCommandFromLine(char * line, char ** history, int * commands_run) 
 {
 
-    // Variable initialization
+    /* Variable initialization */
     pid_t pid;
     int i = 0;
 
-    //memory allocation
+    /*memory allocation */
     char * command = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
     char ** commands = (char**) malloc((MAX_NR_COMMAND_ARGUMENTS+1) * sizeof(char *));
     for(i=0; i<MAX_NR_COMMAND_ARGUMENTS+1; i++) {
@@ -487,28 +479,32 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
     }
     char * which = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 
+    /* reset terminal color to white */
+    printColor("white");
+    printf("\n");
 
-    printf("Nr of pipes:\n");
-    printf("%d\n", nrOfPipes(line));
+    /* for debug */
+    /* printf("Nr of pipes:\n"); */
+    /* printf("%d\n", nrOfPipes(line)); */
     int nrOfPipesInt = nrOfPipes(line);
 
     if (nrOfPipesInt > 0) {
         runPipes(line, nrOfPipesInt);
         return -1;
     } else {
-        // split read string into command and arguments
+        /* split read string into command and arguments */
         commands = split(line, " \n");
     }
 
 
-    // History
+    /* History */
     if(!strcmp(commands[0], "hs")) {
         print_history(history, *commands_run); 
         return -1;      
     }
 
     if(!strcmp(commands[0], "!!")) {
-        // run_history(history, commands_run, 0);
+        /* run_history(history, commands_run, 0); */
         *commands_run = run_history(history, *commands_run, 1);
         return -1;
     }
@@ -531,13 +527,13 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
         }
     }
 
-    // Change directory if "cd" command
+    /* Change directory if "cd" command */
     if(!strcmp(commands[0], "cd")) {
         changeDirectory(commands[1]);
         return -1;
     }
 
-    // Exit terminal
+    /* Exit terminal */
     if(!strcmp(commands[0], "exit")) {
         printColor("blue");
         printf("Exit terminal\n");
@@ -545,13 +541,13 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
         _exit(EXIT_SUCCESS);
     }
 
-    // terminate commands array with NULL for execve
+    /* terminate commands array with NULL for execve */
     commands[stringLength(commands)] = NULL;
 
     strcpy(which, "which ");
     strcat(which, commands[0]); 
 
-    // run "which <command>" and get the full command path
+    /* run "which <command>" and get the full command path */
     char ** whichCommandPath = getCommandOutput(which);         
 
     if(whichCommandPath[0] == NULL){
@@ -567,14 +563,14 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
 
     printf("\n_____________________\n\n");
 
-    // fork process
+    /* fork process */
     pid = fork();
 
     if(pid<0) {
         return errno;
     } else if(pid==0) {
     
-        // execute command with arguments and environment variables
+        /* execute command with arguments and environment variables */
         execve(command, commands, environ);
         perror(NULL);
         return errno;
@@ -593,8 +589,8 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
     free(command);
     free(commands);
     free(which);
-    // free(pipefd);
 }
+
 
 /*********************************************
             MAIN
@@ -602,48 +598,43 @@ int runCommandFromLine(char * line, char ** history, int * commands_run)
 int main(int argc, char const *argv[])
 {
     int i=0;
-    int commands_run = 0; //position on each string
-    char last[100]; //last command
+    int commands_run = 0; /*position on each string */
+    char last[100]; /*last command */
     int line_len = 0;
 
     char ** history = (char**) malloc(MAX_HISTORY_SIZE * sizeof(char*));
     for(i=0; i<MAX_HISTORY_SIZE; i++) {
-            history[i] = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
-            // history[i] = "\0";
-            strcpy(history[i], "\0");
-            // strcpy(history[i], "aa");
-            // history[i][0] = '\0';
-        }
-    // set terminal color to magenta
+        history[i] = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
+        strcpy(history[i], "\0");
+    }
+
+    /* set terminal color to magenta */
     printColor("magenta");
     printf("Terminal started\n");
-    // reset terminal color to white
+    /* reset terminal color to white */
     printColor("white");
 
     size_t bufsize = MAX_LENGTH_STRING;
 
 
-    // Run terminal infinitely (until exit)
+    /* Run terminal infinitely (until exit) */
     while(1) {
 
-        // Allocate memory for variables    
+        /* Allocate memory for variables     */
         char * line = (char *) malloc(MAX_LENGTH_STRING * sizeof(char));
 
-      
-
-        // set yellow color in terminal
+        /* set yellow color in terminal */
         printColor("yellow");
 
-        // print terminal specific symbol
+        /* print terminal specific symbol */
         printf("@");
 
-        //read line from terminal
+        /*read line from terminal */
         getline(&line, &bufsize, stdin);
-        // printf("%s\n", line);
         
-        //reset color to white
+        /*reset color to white */
         printColor("white");
-
+        
  
         if(!strcmp(line, "\n") || strspn(line, " \n") == strlen(line)) {
             continue;
@@ -656,7 +647,7 @@ int main(int argc, char const *argv[])
 
         runCommandFromLine(line, history, &commands_run);
 
-        // Cleanup
+        /* Cleanup */
         free(line);
     }
 
